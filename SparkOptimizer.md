@@ -186,8 +186,9 @@ Apparently the new rule `ReplaceExceptWithNotFilter` gave a good performance gai
 that took around 60 seconds is reduced to 26 seconds with the addition of the new rule. My immediate 
 thought was when there is 120% latency gain on a standalone instance where there is no actual shuffling involved, 
 there should be a much better performance gain in a big cluster. So i wanted to add this new rule to the
-spark Optimizer via `ExperimentalMethods` that is available since spark 2.0 [Ref]() and verify it's 
-performance in a production cluster.
+spark Optimizer via `ExperimentalMethods` that is available since spark 2.0 (thanks to 
+[SPARK-9843](https://issues.apache.org/jira/browse/SPARK-9843)) and verify it's performance in a 
+production cluster.
 
 When i did so, the new rule is never applied by the spark optimizer. When i did some debugging, 
 i found the extra optimizations added via `ExperimentalMethods` are applied only after all the batches 
