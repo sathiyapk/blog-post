@@ -172,9 +172,9 @@ already replaced with `Anti-Join` by the predefined rules. It would have been he
 `ExperimentalMethods` class provides option to add some pre-optimization rules here. I will discuss 
 how to make this option available in the [next post]().
 
-So now the only way to test the performance difference is to rent some machines from amazon aws, and
-deploy Hadoop, Spark with my modifications and upload a very big file to the HDFS. OR.. There is an easier
-way, we could write a custom rule to rewrite the anti join using not filter :)
+So in order to test the performance of this new rule i wrote a new rule `ReplaceAntiJoinWithNotFilter` 
+that rewrites the anti join using not filter. And running a simple query on a csv file of 10 Gb that
+took 3 minutes is reduced to 20 seconds, which is actually an order of magnitude differece.
 
 Here is that custom rule:
 
