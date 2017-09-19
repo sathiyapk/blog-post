@@ -195,7 +195,8 @@ i found the extra optimizations added via `ExperimentalMethods` are applied only
 of predefined are rules applied. By the time the new `ReplaceExceptWithNotFilter` rule scheduled 
 to apply, the `Except` operator is already replaced with the `Anti-Join` operation by the predefined 
 rules. It would have been helpful if the `ExperimentalMethods` class provides option to add some 
-pre-optimization rules here. I will discuss how to make this option available in the [next post]().
+pre-optimization rules here. I will discuss how to make this option available in the 
+[next post](https://github.com/sathiyapk/Blog-Posts/blob/master/SparkOptimizer.md).
 
 So in order to test the performance of this new rule i wrote an another rule `ReplaceAntiJoinWithNotFilter` 
 that rewrites the anti join operation with a filter operator. 
@@ -277,6 +278,7 @@ But in case of adding the `ReplaceAntiJoinWithNotFilter` rule via `ExperimentalM
 optimization is not effected. So while applying any custom rules at the end via `ExperimentalMethods`, 
 we should make sure it is fully optimized, unless `ExperimentalMethods` class provides an option 
 to apply our custom rules before spark predefined rules are applied. Let's see how to open this option
-in `ExperimentalMethods` in less than 10 lines of codes in my [next post]().
+in `ExperimentalMethods` in less than 10 lines of codes in my 
+[next post](https://github.com/sathiyapk/Blog-Posts/blob/master/SparkOptimizer.md).
 
 
