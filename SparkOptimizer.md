@@ -110,48 +110,33 @@ code, it's not necessarily to be perfect as i'm still experimenting with it.
 ```scala
 object ReplaceExceptWithNotFilter extends Rule[LogicalPlan] {
 
-  def apply(plan: LogicalPlan): LogicalPlan = {
-    plan transform {
-      case Except(left, right) if isEligible(left, right) =>
-        Distinct(
-          Filter(Not(replaceAttributeRef(filterCondition(right), left)), left)
-        )
-    }
+  implicit def nodeToFilter(node: LogicalPlan) = node.asInstanceOf[Filter]
+
+  def apply(plan: LogicalPlan): LogicalPlan = plan transform {
+    case Except(left, right) if isEligible(left, right) =>
+      Distinct(
+        Filter(Not(replaceAttributesIn(right.condition, left)), left)
+      )
   }
 
-  def isEligible(left: LogicalPlan, right: LogicalPlan): Boolean = {
-    val leftNode = left.nodeName
-    val rightNode = right.nodeName
-
-    (rightNode, leftNode) match {
-      case ("Filter", "Filter") => equals(filterBaseRelation(right), filterBaseRelation(left))
-      case ("Filter", _) => equals(filterBaseRelation(right), baseRelation(left))
-      case _ => false
-    }
-  }
-
-  def filterBaseRelation(node: LogicalPlan) = baseRelation(node.asInstanceOf[Filter].child)
-
-  def baseRelation(node: LogicalPlan) = if (node.nodeName == "LogicalRelation") {
-    node.asInstanceOf[LogicalRelation].relation
-  } else {
-    node.canonicalized
-  }
-
-  def equals[A](r1: A, r2: A) = (r1, r2) match {
-    case (r1: BaseRelation, r2: BaseRelation) => r1 == r2
-    case (r1: LogicalPlan, r2: LogicalPlan) => r1.fastEquals(r2)
+  def isEligible(left: LogicalPlan, right: LogicalPlan): Boolean = (left, right) match {
+    case (_ @ Filter(_, lChild: LogicalRelation), _ @ Filter(_, rChild: LogicalRelation)) =>
+      equals(lChild, rChild)
+    case (leftNode: LogicalRelation, _ @ Filter(_, rChild: LogicalRelation)) =>
+      equals(leftNode, rChild)
     case _ => false
   }
 
-  def replaceAttributeRef(condition: Expression, leftChild: LogicalPlan): Expression = {
+  def equals(leftNode: LogicalRelation, rightNode: LogicalRelation): Boolean = {
+    leftNode.relation == rightNode.relation
+  }
+
+  def replaceAttributesIn(condition: Expression, leftChild: LogicalPlan): Expression = {
     condition transform {
       case AttributeReference(name, _, _, _) =>
         leftChild.output.find(_.name == name).get
     }
   }
-
-  def filterCondition(node: LogicalPlan) = node.asInstanceOf[Filter].condition
 }
 ```
 
@@ -205,49 +190,38 @@ Here is that custom rule:
 ```scala
 object ReplaceAntiJoinWithNotFilter extends Rule[LogicalPlan] {
 
-  override def apply(plan: LogicalPlan) = {
-    plan transform {
-      case Join(left, right, joinType, cond) if isEligible(left, right, joinType) =>
-        Filter(Not(replaceAttributeRef(filterCondition(right), left)), left)
-    }
-  }
-  
-  def isEligible(left: LogicalPlan, right: LogicalPlan, join: JoinType): Boolean = {
-    val joinType = join.sql
-    val leftNode = left.nodeName
-    val rightNode = right.nodeName
+  val logger: Logger = LoggerFactory.getLogger(getClass)
+  logger.warn("Entered apply of the rule")
 
-    (joinType, rightNode, leftNode) match {
-      case ("LEFT ANTI", "Filter", "Filter") => equals(filterBaseRelation(right),
-        filterBaseRelation(left))
-      case ("LEFT ANTI", "Filter", _) => equals(filterBaseRelation(right),
-        baseRelation(left))
-      case _ => false
-    }
+  implicit def nodeToFilter(node: LogicalPlan) = node.asInstanceOf[Filter]
+
+  def apply(plan: LogicalPlan): LogicalPlan = plan transform {
+    case Join(left, right, joinType, _) if joinType.sql == "LEFT ANTI" && isEligible(left, right) =>
+      Filter(Not(replaceAttributesIn(right.condition, left)), left)
   }
 
-  def filterBaseRelation(node: LogicalPlan) = baseRelation(node.asInstanceOf[Filter].child)
-
-  def baseRelation(node: LogicalPlan) = if (node.nodeName == "LogicalRelation") {
-    node.asInstanceOf[LogicalRelation].relation
-  } else {
-    node.canonicalized
+  def isEligible(left: LogicalPlan, right: LogicalPlan): Boolean = (left, right) match {
+    case (_ @ Filter(_, lChild: LogicalRelation), _ @ Filter(_, rChild: LogicalRelation)) =>
+      logger.warn("Filter and Filter case: " + (equals(lChild, rChild)))
+      equals(lChild, rChild)
+    case (leftNode: LogicalRelation, _ @ Filter(_, rChild: LogicalRelation)) =>
+      logger.warn("Logical Node and Filter case: " + (equals(leftNode, rChild)))
+      equals(leftNode, rChild)
+    case _ =>
+      logger.warn("Didn't match any condition")
+      false
   }
 
-  def equals[A](r1: A, r2: A) = (r1, r2) match {
-    case (r1: BaseRelation, r2: BaseRelation) => r1 == r2
-    case (r1: LogicalPlan, r2: LogicalPlan) => r1.fastEquals(r2)
-    case _ => false
+  def equals(leftNode: LogicalRelation, rightNode: LogicalRelation): Boolean = {
+    leftNode.relation == rightNode.relation
   }
 
-  def replaceAttributeRef(condition: Expression, leftChild: LogicalPlan): Expression = {
+  def replaceAttributesIn(condition: Expression, leftChild: LogicalPlan): Expression = {
     condition transform {
       case AttributeReference(name, _, _, _) =>
         leftChild.output.find(_.name == name).get
     }
   }
-  
-  def filterCondition(node: LogicalPlan) = node.asInstanceOf[Filter].condition
 }
 ```
 
