@@ -190,9 +190,6 @@ Here is that custom rule:
 ```scala
 object ReplaceAntiJoinWithNotFilter extends Rule[LogicalPlan] {
 
-  val logger: Logger = LoggerFactory.getLogger(getClass)
-  logger.warn("Entered apply of the rule")
-
   implicit def nodeToFilter(node: LogicalPlan) = node.asInstanceOf[Filter]
 
   def apply(plan: LogicalPlan): LogicalPlan = plan transform {
@@ -202,14 +199,10 @@ object ReplaceAntiJoinWithNotFilter extends Rule[LogicalPlan] {
 
   def isEligible(left: LogicalPlan, right: LogicalPlan): Boolean = (left, right) match {
     case (_ @ Filter(_, lChild: LogicalRelation), _ @ Filter(_, rChild: LogicalRelation)) =>
-      logger.warn("Filter and Filter case: " + (equals(lChild, rChild)))
       equals(lChild, rChild)
     case (leftNode: LogicalRelation, _ @ Filter(_, rChild: LogicalRelation)) =>
-      logger.warn("Logical Node and Filter case: " + (equals(leftNode, rChild)))
       equals(leftNode, rChild)
-    case _ =>
-      logger.warn("Didn't match any condition")
-      false
+    case _ => false
   }
 
   def equals(leftNode: LogicalRelation, rightNode: LogicalRelation): Boolean = {
