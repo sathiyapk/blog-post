@@ -18,14 +18,14 @@ with this post.
 Case 1:
 <center>
 
-![replace_except_with_not_filter_case-1](images/spark-optimizer/ReplaceExceptWithNotFilter-case1.png)
+![replace_except_with_not_filter_case-1](images/spark-optimizer/ReplaceExceptWithNotFilter-case1.svg)
 
 </center>
 
 Case 2:
 <center>
 
-![replace_except_with_not_filter_case-2](images/spark-optimizer/ReplaceExceptWithNotFilter-case2.png)
+![replace_except_with_not_filter_case-2](images/spark-optimizer/ReplaceExceptWithNotFilter-case2.svg)
 
 </center>
 
