@@ -1,4 +1,4 @@
-
+# Spark Optimization Rule - ReplaceExceptWithNotFilter
 Spark community decided to replace Except logical operator using left anti-join in [SPARK-12660](https://issues.apache.org/jira/browse/SPARK-12660).
 It facilitates to take advantage of all the benefits of the join operations such as managed memory, 
 code generation and broadcast joins, cc. [SPARK-12660](https://issues.apache.org/jira/browse/SPARK-12660).
@@ -109,26 +109,30 @@ code, it's not necessarily to be perfect as i'm still experimenting with it.
 
 ```scala
 object ReplaceExceptWithNotFilter extends Rule[LogicalPlan] {
-
-  implicit def nodeToFilter(node: LogicalPlan) = node.asInstanceOf[Filter]
+  
+  implicit def nodeToFilter(node: LogicalPlan): Filter = node.asInstanceOf[Filter]
 
   def apply(plan: LogicalPlan): LogicalPlan = plan transform {
     case Except(left, right) if isEligible(left, right) =>
       Distinct(
-        Filter(Not(replaceAttributesIn(right.condition, left)), left)
+        Filter(Not(replaceAttributesIn(combineFilters(right).condition, left)), left)
       )
   }
 
   def isEligible(left: LogicalPlan, right: LogicalPlan): Boolean = (left, right) match {
-    case (_ @ Filter(_, lChild: LogicalRelation), _ @ Filter(_, rChild: LogicalRelation)) =>
-      equals(lChild, rChild)
-    case (leftNode: LogicalRelation, _ @ Filter(_, rChild: LogicalRelation)) =>
-      equals(leftNode, rChild)
+    case (left: Filter, right: Filter) => parent(left).sameResult(parent(right))
+    case (left, right: Filter) => left.sameResult(parent(right))
     case _ => false
   }
 
-  def equals(leftNode: LogicalRelation, rightNode: LogicalRelation): Boolean = {
-    leftNode.relation == rightNode.relation
+  def parent(plan: LogicalPlan): LogicalPlan = plan match {
+    case x @ Filter(_, child) => parent(child)
+    case x => x
+  }
+
+  def combineFilters(plan: LogicalPlan): LogicalPlan = CombineFilters(plan) match {
+    case result if !result.fastEquals(plan) => combineFilters(result)
+    case result => result
   }
 
   def replaceAttributesIn(condition: Expression, leftChild: LogicalPlan): Expression = {
@@ -144,8 +148,8 @@ I tested the code on a csv file of size 500 Mb using couple of quick queries som
  
 ```sql
  val ds1 = spark.read.option("header", "true").csv("path/to/the/dataset")
- val ds2 = ds.where($"month" === 12)
- val ds3 = ds.where($"month" < 3)
+ val ds2 = ds1.where($"month" === 12)
+ val ds3 = ds1.where($"month" < 3)
  val ds4 = ds3.except(ds2)
 ```
 
