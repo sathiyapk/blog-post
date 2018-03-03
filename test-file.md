@@ -1,6 +1,7 @@
 ---
-post_title: 'Post Title'
-layout: post_type_probably_post
-published: true_or_false
+post_title: Testing github sync
+layout: post
+published: true
 ---
+This is a test post.
 Post goes here.
