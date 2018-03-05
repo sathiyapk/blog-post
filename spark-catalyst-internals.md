@@ -1,9 +1,3 @@
----
-post_title: Spark Catalyst Internals
-layout: post
-published: true
----
-
 # Spark Catalyst Internals
 Spark catalyst is one of the secret sauce of Spark's Operations on the structured data. Let's take
 a deep look into its internals.

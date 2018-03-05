@@ -1,4 +1,4 @@
-
+# Spark Adding Custom Optimization Rules
 One of the main benefits of spark-sql as mentioned in their [sigmod paper](https://people.csail.mit.edu/matei/papers/2015/sigmod_spark_sql.pdf) 
 is its ability to easily define and plug in user defined adhoc rules for better optimization. 
 Spark-sql provides api for adding set of adhoc rules that can be plugged into the query planner during 
