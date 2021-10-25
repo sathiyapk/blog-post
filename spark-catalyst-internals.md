@@ -10,14 +10,14 @@ manipulating the internal tree node structure. The contract of the tree node abs
 class that extending it is to define the list of children.
 
 # TreeNode library
-![replace_except_with_not_filter_case-1](https://github.com/sathiyapk/blog-post/blob/master/images/spark-catalyst-internals/Catalyst-TreeNode-Abstraction.svg)
+![replace_except_with_not_filter_case-1](https://raw.githubusercontent.com/sathiyapk/blog-post/master/images/spark-catalyst-internals/Catalyst-TreeNode-Abstraction.svg)
 
 ## Evaluate-able TreeNode
 
-![replace_except_with_not_filter_case-1](https://github.com/sathiyapk/blog-post/blob/master/images/spark-catalyst-internals/Catalyst-TreeNode-Expression.svg)
+![replace_except_with_not_filter_case-1](https://raw.githubusercontent.com/sathiyapk/blog-post/master/images/spark-catalyst-internals/Catalyst-TreeNode-Expression.svg)
 
 ## Query-able TreeNode
-![replace_except_with_not_filter_case-1](https://github.com/sathiyapk/blog-post/blob/master/images/spark-catalyst-internals/Catalyst-TreeNode-LogicalPlan.svg)
+![replace_except_with_not_filter_case-1](https://raw.githubusercontent.com/sathiyapk/blog-post/master/images/spark-catalyst-internals/Catalyst-TreeNode-LogicalPlan.svg)
 
 
 ## Transform-able TreeNode
