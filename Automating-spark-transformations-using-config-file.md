@@ -17,14 +17,21 @@ until an action is called on that.
 
 *pipelined:*
 
-A list of spark Transformation functions.
+A list of spark Transformation functions:
+
+Narrow Transformations (without Shuffle):
+*Map, FlatMap, MapPartition, Filter, Sample, Union*
+
+Wide Transformations (with Shuffle): 
+*Intersection, Distinct, ReduceByKey, GroupByKey, Join, Repartition, Coalesce*
 
 
 ### Action :
 In contrast to transformation functions that can be detained from executing an action right away, 
 Action functions needs the result right away and often they are the final action that completes a pipeline.
 
-A list of spark Transformation functions.
+A list of spark Action functions:
+*Show, Count, Collect, take, foreach, write*
 
 ### Pipeline : 
 A Spark job is essentially composes of minimum one pipeline until n number of pipelines.
