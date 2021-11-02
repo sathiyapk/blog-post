@@ -38,22 +38,47 @@ A Spark job is essentially composes of minimum one pipeline until n number of pi
 
 
 Here is an example of a typical spark pipeline.
+
 ````scala
-val df = spark.read.parquet("..")
-df
- .filter(...)
- .select(...)
- .withColumnRenamed("..", "..")
- .withColumn("..", f(".."))
- .write
- .parquet("..")
+val baseDF = spark.read.parquet("..")
+
+val filteredDF = baseDF
+  .filter(..)
+  .select(..)
+
+val computedDF = filteredDF
+  .withColumnRenamed("..", "..")
+  .withColumn("..", f(".."))
+
+val newDF = spark.read.parquet("..")
+
+val joinedDF = computedDF.join(newDF, seq("col"))
+
+joinedDF
+  .write
+  .parquet("..")
 ````
 
+We may see a lot of DFs in the above code, but this is a typical pipline that 
+includes a series of transformations materialized by a single action.
 
-Transformations: filter, select, withColumnRenamed, withColumn
+**Transformations:** filter, select, withColumnRenamed, withColumn, join
 
-Action: write
+**Action:** write
 
+The above pipeline can also be written as follows : 
+````scala
+val df = spark.read.parquet("..")
+
+df
+  .filter(..)
+  .select(..)
+  .withColumnRenamed("..", "..")
+  .withColumn("..", f(".."))
+  .join(spark.read.parquet(".."), seq("col"))
+  .write
+  .parquet("..")
+````
 
 ## Datalake : 
 I tend to see different definitions of the term datalake, so let's clear out the definition of the datalake 
@@ -62,14 +87,16 @@ that I refer to here. The term datalake here refers to the definition from Datab
 A datalake is a collection of multiple files of different formats varying in size and quality that are processed,
  refined and combiend in order to be able to run sql and datascience algorithms on it. 
 ```
-The concept of datalake is getting more and more popular in almost every industry and sectors.
+The concept of datalake is getting more and more popular in almost every industry and sectors. The main idea behind 
+a datalake is to centralize all the files and data in one place in a unified format.  
 
 ### Tables, Columns and Schema :
 One of the most common pattern in datalake projects that I see often is constructing tables from the ingested data that
 often involves hundreds of tables, columns and schemas to maintain.
 
-Creating tables from the ingested data is fairly one of the easiest job. Although, maintaining hundreds of schemas in
-java or scala code will lead to cumbersome and one can loose a lot of time .
+Creating tables from the ingested data would mostly involve performing a similar set of transformations over and over on a 
+different set of input files. Although, it may be fairly the easiest job, maintaining hundreds of schemas in
+java or scala code will clutter the source code making it difficult to manage and debug.
 
 ### Externalising table Schemas in a csv files
 
