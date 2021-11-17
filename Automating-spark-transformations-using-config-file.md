@@ -147,7 +147,7 @@ for the first time may need extra time and effort.
 Automating transformations using specification file works like a charm for sources with one-to-one transformations. However, 
 integrating sources that includes complex adhoc transformations rules may be effortful. 
 
-# Automating Spark transformations using generic code for other use cases :
+# Generalizing Spark Transformations using generic code for other use cases :
 A quick background about Transformation and Action in Spark.
 
 ### Transformations :
