@@ -1,85 +1,5 @@
 # Automating spark pipelines using generic code and configurations files :
 
-A quick background about Transformation and Action in Spark.
-
-### Transformations : 
-As the name suggests, transformations transfers a dataset from one format to an another format.
-They are lazy in order to be able to be replaced, optimized, staged, grouped, pipelined executed all at once 
-until an action is called on that.
-
-*Replaced:*
-
-*Optimized:*
-
-*staged:*
-
-*grouped:*
-
-*pipelined:*
-
-A list of spark Transformation functions:
-
-Narrow Transformations (without Shuffle):
-*Map, FlatMap, MapPartition, Filter, Sample, Union*
-
-Wide Transformations (with Shuffle): 
-*Intersection, Distinct, ReduceByKey, GroupByKey, Join, Repartition, Coalesce*
-
-
-### Action :
-In contrast to transformation functions that can be detained from executing an action right away, 
-Action functions needs the result right away and often they are the final action that completes a pipeline.
-
-A list of spark Action functions:
-*Show, Count, Collect, take, foreach, write*
-
-### Pipeline : 
-A Spark job is essentially composes of minimum one pipeline until n number of pipelines.
-
-
-Here is an example of a typical spark pipeline.
-
-````scala
-val baseDF = spark.read.parquet("..")
-
-val filteredDF = baseDF
-  .filter(..)
-  .select(..)
-
-val computedDF = filteredDF
-  .withColumnRenamed("..", "..")
-  .withColumn("..", f(".."))
-
-val newDF = spark.read.parquet("..")
-
-val joinedDF = computedDF.join(newDF, seq("col"))
-
-joinedDF
-  .write
-  .parquet("..")
-````
-
-We may see a lot of DFs in the above code, but this is a typical pipline that 
-includes a series of transformations materialized by a single action.
-
-**Transformations:** filter, select, withColumnRenamed, withColumn, join
-
-**Action:** write
-
-The above pipeline can also be written as follows : 
-````scala
-val df = spark.read.parquet("..")
-
-df
-  .filter(..)
-  .select(..)
-  .withColumnRenamed("..", "..")
-  .withColumn("..", f(".."))
-  .join(spark.read.parquet(".."), seq("col"))
-  .write
-  .parquet("..")
-````
-
 ## Datalake : 
 I tend to see different definitions of the term datalake, so let's clear out the definition of the datalake 
 that I refer to here. The term datalake here refers to the definition from Databricks. 
@@ -227,3 +147,83 @@ for the first time may need extra time and effort.
 Automating transformations using specification file works like a charm for sources with one-to-one transformations. However, 
 integrating sources that includes complex adhoc transformations rules may be effortful. 
 
+# Automating Spark transformations using generic code for other use cases :
+A quick background about Transformation and Action in Spark.
+
+### Transformations :
+As the name suggests, transformations transfers a dataset from one format to an another format.
+They are lazy in order to be able to be replaced, optimized, staged, grouped, pipelined executed all at once
+until an action is called on that.
+
+*Replaced:*
+
+*Optimized:*
+
+*staged:*
+
+*grouped:*
+
+*pipelined:*
+
+A list of spark Transformation functions:
+
+Narrow Transformations (without Shuffle):
+*Map, FlatMap, MapPartition, Filter, Sample, Union*
+
+Wide Transformations (with Shuffle):
+*Intersection, Distinct, ReduceByKey, GroupByKey, Join, Repartition, Coalesce*
+
+
+### Action :
+In contrast to transformation functions that can be detained from executing an action right away,
+Action functions needs the result right away and often they are the final action that completes a pipeline.
+
+A list of spark Action functions:
+*Show, Count, Collect, take, foreach, write*
+
+### Pipeline :
+A Spark job is essentially composes of minimum one pipeline until n number of pipelines.
+
+
+Here is an example of a typical spark pipeline.
+
+````scala
+val baseDF = spark.read.parquet("..")
+
+val filteredDF = baseDF
+  .filter(..)
+  .select(..)
+
+val computedDF = filteredDF
+  .withColumnRenamed("..", "..")
+  .withColumn("..", f(".."))
+
+val newDF = spark.read.parquet("..")
+
+val joinedDF = computedDF.join(newDF, seq("col"))
+
+joinedDF
+  .write
+  .parquet("..")
+````
+
+We may see a lot of DFs in the above code, but this is a typical pipline that
+includes a series of transformations materialized by a single action.
+
+**Transformations:** filter, select, withColumnRenamed, withColumn, join
+
+**Action:** write
+
+The above pipeline can also be written as follows :
+````scala
+val df = spark.read.parquet("..")
+
+df
+  .filter(..)
+  .select(..)
+  .withColumnRenamed("..", "..")
+  .withColumn("..", f(".."))
+  .join(spark.read.parquet(".."), seq("col"))
+  .write
+  .parquet("..")
+````
